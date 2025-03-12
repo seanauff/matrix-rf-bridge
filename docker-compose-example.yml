@@ -11,7 +11,7 @@ services:
       # Other Synapse configurations as needed
 
   rtl-airband-matrix:
-    build: ./rtl-airband-matrix  # Assumes a Dockerfile in ./uploader directory
+    build: ./rtl-airband-matrix  # Assumes a Dockerfile in ./rtl-airband-matrix directory
     container_name: rtl-airband-matrix
     volumes:
       - ./recordings:/recordings  # Directory where recordings are saved
