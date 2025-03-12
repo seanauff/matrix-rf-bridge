@@ -5,8 +5,8 @@ from nio import AsyncClient, UploadError, RoomSendError
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import logging
-import src.get_or_create_room as get_or_create_room
-import src.parse_channels as parse_channels
+import get_or_create_room
+import parse_channels
 
 class UploadHandler(FileSystemEventHandler):
     def __init__(self, client: AsyncClient, room_ids: dict):
