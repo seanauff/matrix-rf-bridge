@@ -141,7 +141,7 @@ def parse_channels(config_path):
         channels_content = content[paren_start + 1:paren_end]
         
         # Find all frequency lines
-        freq_matches = re.findall(r'freq\s*=\s*(.*?);', channels_content)
+        freq_matches = re.findall(r'[^_]freq\s*=\s*(.*?);', channels_content)
         
         for match in freq_matches:
             try:
