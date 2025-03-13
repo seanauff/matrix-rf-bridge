@@ -32,7 +32,8 @@ class UploadHandler(FileSystemEventHandler):
                     f,
                     content_type="audio/mpeg",  # MIME type for MP3 audio files
                     filename=os.path.basename(file_path),  # Use the file's basename as the name
-                    encrypt=False  # Assuming no encryption for simplicity
+                    encrypt=False,  # Assuming no encryption for simplicity
+                    filesize=os.path.getsize(file_path)  # If left as None, some servers might refuse the upload.
                 )
                 logging.info(f"Upload response: {upload_response}")
                 # Check if the upload failed
