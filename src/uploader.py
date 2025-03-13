@@ -1,7 +1,7 @@
 import os
 import asyncio
 import re
-from nio import AsyncClient, UploadError, RoomSendError, RoomCreateError, RoomVisibility
+from nio import AsyncClient, UploadResponse, UploadError, RoomSendError, RoomCreateError, RoomVisibility
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import logging
@@ -34,21 +34,22 @@ class UploadHandler(FileSystemEventHandler):
                     filename=os.path.basename(file_path),  # Use the file's basename as the name
                     encrypt=False  # Assuming no encryption for simplicity
                 )
-
+                logging.info(f"Upload response: {upload_response}")
                 # Check if the upload failed
-                if isinstance(upload_response, UploadError):
-                    logging.error(f"Failed to upload file: {upload_response.message}")
-                    return
-
-                # Get the MXC URI of the uploaded file
-                mxc_uri = upload_response.content_uri
-                logging.info(f"File uploaded successfully: {mxc_uri}")
+                if isinstance(upload_response, UploadResponse):
+                    logging.info(f"Uploaded successfully: {upload_response.content_uri}")
+                elif isinstance(upload_response, UploadError):
+                    logging.error(f"Upload failed: {upload_response.message}")
+                    return None
+                else:
+                    logging.error(f"Unexpected response: {upload_response}")
+                    return None
 
                 # Prepare the content for the audio message
                 content = {
                     "msgtype": "m.audio",  # Message type for audio files
                     "body": os.path.basename(file_path),  # File name as the message body
-                    "url": mxc_uri  # URL of the uploaded file
+                    "url": upload_response.content_uri  # URL of the uploaded file
                 }
 
                 # Send the message to the specified room
