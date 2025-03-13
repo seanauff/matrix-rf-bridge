@@ -28,7 +28,7 @@ class UploadHandler(FileSystemEventHandler):
             # Open the file in binary read mode
             with open(file_path, "rb") as f:
                 # Upload the file to the Matrix media repository
-                upload_response = await self.client.upload(
+                upload_response, maybe_keys = await self.client.upload(
                     f,
                     content_type="audio/mpeg",  # MIME type for MP3 audio files
                     filename=os.path.basename(file_path),  # Use the file's basename as the name
