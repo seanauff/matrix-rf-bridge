@@ -192,6 +192,9 @@ def parse_channels(config_path):
                         frequencies.append(freq_hz)
                     except ValueError as e:
                         logging.warning(f"Failed to parse frequency '{freq_str}': {e}")
+
+        # Log the number of non-disabled channels
+        logging.info(f"Number of non-disabled channels: {non_disabled_count}")
     
     except FileNotFoundError:
         logging.error(f"Config file not found: {config_path}")
