@@ -107,7 +107,7 @@ class UploadHandler(FileSystemEventHandler):
         """
         import re
         filename = os.path.basename(file_path)
-        match = re.search(r'_(\d+)\.wav$', filename)
+        match = re.search(r'_(\d+)\.mp3$', filename)
         return int(match.group(1)) if match else None
 
 def parse_channels(config_path):
@@ -220,7 +220,7 @@ async def get_or_create_room(client, frequency, domain):
     
     # Room doesn’t exist, create it
     create_response = await client.room_create(
-        alias_name=freq_str,  # Local part of the alias (e.g., "145.500MHz")
+        alias=freq_str,  # Local part of the alias (e.g., "145.500MHz")
         name=f"Recordings for {freq_str}",
         topic=f"Audio recordings for frequency {freq_str}",
         visibility="public"  # Optional: makes the room joinable without invite
