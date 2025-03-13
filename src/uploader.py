@@ -7,16 +7,10 @@ from watchdog.events import FileSystemEventHandler
 import logging
 
 class UploadHandler(FileSystemEventHandler):
-    def __init__(self, client: AsyncClient, room_ids: dict):
-        """
-        Initialize the UploadHandler.
-
-        Args:
-            client (AsyncClient): The Matrix client instance.
-            room_ids (dict): Dictionary mapping frequencies to room IDs.
-        """
+    def __init__(self, client, room_ids, upload_queue):
         self.client = client
         self.room_ids = room_ids
+        self.upload_queue = upload_queue  # Queue to pass tasks to the main thread
 
     async def upload_file(self, file_path: str, room_id: str):
         """
@@ -26,7 +20,7 @@ class UploadHandler(FileSystemEventHandler):
             file_path (str): The path to the audio file to upload.
             room_id (str): The ID of the Matrix room to send the file to.
         """
-        logging.info(f"Preparing to upload file: {file_path} to room: {room_id}")
+        logging.info(f"Uploading {file_path} to room {room_id}")
         # Add a 1-second delay to ensure the file is fully written
         await asyncio.sleep(1)
 
@@ -84,13 +78,14 @@ class UploadHandler(FileSystemEventHandler):
             event: The filesystem event object.
         """
         if not event.is_directory:
-            file_path = event.dest_path  # The new path after the rename
+            file_path = event.dest_path
             if file_path.endswith('.mp3'):
                 logging.info(f"New mp3 file: {file_path}")
                 frequency = self.extract_frequency(file_path)
                 if frequency and frequency in self.room_ids:
                     room_id = self.room_ids[frequency]
-                    asyncio.create_task(self.upload_file(file_path, room_id))
+                    # Add the task to the queue instead of creating it directly
+                    self.upload_queue.put_nowait((file_path, room_id))
                 else:
                     logging.warning(f"No room found for frequency in mp3 file: {file_path}")
 
@@ -308,7 +303,13 @@ async def main():
         os.makedirs(recordings_path)
         logging.info(f"Created directory {recordings_path}")
     
-    handler = UploadHandler(client, room_ids)
+    # Create an asyncio queue for upload tasks
+    upload_queue = asyncio.Queue()
+
+    # Initialize the UploadHandler with the queue
+    handler = UploadHandler(client, room_ids, upload_queue)
+
+    # Set up the watchdog observer
     observer = Observer()
     observer.schedule(handler, recordings_path, recursive=False)
     observer.start()
@@ -316,13 +317,16 @@ async def main():
     
     # Keep the script running
     try:
+        # Main loop to process upload tasks from the queue
         while True:
-            await asyncio.sleep(1)
-    except KeyboardInterrupt:
+            file_path, room_id = await upload_queue.get()  # Wait for a task
+            await handler.upload_file(file_path, room_id)  # Run the upload
+            upload_queue.task_done()  # Mark the task as complete
+    except asyncio.CancelledError:
         observer.stop()
-        observer.join()
     finally:
-        await client.close()
+        observer.join()
+        await client.close()  # Clean up your client
 
 if __name__ == "__main__":
     asyncio.run(main())
