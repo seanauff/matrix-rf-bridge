@@ -67,7 +67,7 @@ class UploadHandler(FileSystemEventHandler):
         except FileNotFoundError:
             logging.error(f"File not found: {file_path}")
         except Exception as e:
-            logging.error(f"Error in upload_file: {e}")
+            logging.error(f"Upload failed for {file_path}: {e}")
 
     # Example of how this might be triggered (for context)
     def on_moved(self, event):
@@ -86,6 +86,7 @@ class UploadHandler(FileSystemEventHandler):
                     room_id = self.room_ids[frequency]
                     # Add the task to the queue instead of creating it directly
                     self.upload_queue.put_nowait((file_path, room_id))
+                    logging.info(f"Added upload task for {file_path} to queue")
                 else:
                     logging.warning(f"No room found for frequency in mp3 file: {file_path}")
 
@@ -314,17 +315,20 @@ async def main():
     observer.schedule(handler, recordings_path, recursive=False)
     observer.start()
     logging.info(f"Started observer for {recordings_path}")
+    logging.info("Starting main loop to process upload queue")
     
     # Keep the script running
     try:
         # Main loop to process upload tasks from the queue
         while True:
             file_path, room_id = await upload_queue.get()  # Wait for a task
+            logging.info(f"Processing upload task for {file_path}")
             await handler.upload_file(file_path, room_id)  # Run the upload
             upload_queue.task_done()  # Mark the task as complete
-    except asyncio.CancelledError:
-        observer.stop()
+    except Exception as e:
+        logging.error(f"Error in main loop: {e}")
     finally:
+        observer.stop()
         observer.join()
         await client.close()  # Clean up your client
 
