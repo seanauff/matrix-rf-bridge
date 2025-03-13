@@ -1,7 +1,7 @@
 import os
 import asyncio
 import re
-from nio import AsyncClient, UploadError, RoomSendError, RoomCreateError
+from nio import AsyncClient, UploadError, RoomSendError, RoomCreateError, RoomVisibility
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import logging
