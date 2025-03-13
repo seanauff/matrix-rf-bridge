@@ -78,25 +78,21 @@ class UploadHandler(FileSystemEventHandler):
     # Example of how this might be triggered (for context)
     def on_moved(self, event):
         """
-        Handle the creation of a new file by scheduling an upload task, but only for .mp3 files.
+        Handle the renaming of a file, processing it if it now ends with .mp3.
     
         Args:
             event: The filesystem event object.
         """
         if not event.is_directory:
-            file_path = event.src_path
-            if not file_path.endswith('.mp3'):
-                logging.info(f"Skipping non-mp3 file: {file_path}")
-                return
-            logging.info(f"New mp3 file detected: {file_path}")
-            # Extract frequency from filename (implementation not shown)
-            frequency = self.extract_frequency(file_path)
-            if frequency and frequency in self.room_ids:
-                room_id = self.room_ids[frequency]
-                # Schedule the upload asynchronously
-                asyncio.create_task(self.upload_file(file_path, room_id))
-            else:
-                logging.warning(f"No room found for frequency in mp3 file: {file_path}")
+            file_path = event.dest_path  # The new path after the rename
+            if file_path.endswith('.mp3'):
+                logging.info(f"New mp3 file: {file_path}")
+                frequency = self.extract_frequency(file_path)
+                if frequency and frequency in self.room_ids:
+                    room_id = self.room_ids[frequency]
+                    asyncio.create_task(self.upload_file(file_path, room_id))
+                else:
+                    logging.warning(f"No room found for frequency in mp3 file: {file_path}")
 
     def extract_frequency(self, file_path: str) -> int:
         """
