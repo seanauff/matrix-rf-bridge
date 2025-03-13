@@ -150,7 +150,11 @@ def parse_channels(config_path):
     Returns:
         list: List of frequencies in Hertz (integers).
     """
+    # Get the environment variable, defaulting to 'true' (skip disabled channels)
+    skip_disabled = os.getenv('SKIP_DISABLED_CHANNELS', 'true').lower() == 'true'
+    
     frequencies = []
+    non_disabled_count = 0
     
     try:
         with open(config_path, 'r') as f:
@@ -168,21 +172,26 @@ def parse_channels(config_path):
         channel_blocks = re.findall(r'\{.*?\}', channels_content, re.DOTALL)
         logging.info(f"Found {len(channel_blocks)} channel blocks.")
         
+        # Iterate through each channel block
         for block in channel_blocks:
-            # Skip disabled channels (optional, remove this check if you want all channels)
-            if 'disable = true;' in block:
-                continue
+            # Check if the channel is disabled
+            is_disabled = 'disable = true;' in block
             
-            # Extract the frequency
-            freq_match = re.search(r'[^_]freq\s*=\s*(.*?);', block)
-            if freq_match:
-                freq_str = freq_match.group(1).strip()
-                try:
-                    freq_hz = parse_frequency(freq_str)
-                    frequencies.append(freq_hz)
-                    logging.info(f"Parsed frequency: {freq_hz} Hz")
-                except ValueError as e:
-                    logging.warning(f"Failed to parse frequency '{freq_str}': {e}")
+            # Increment counter if the channel is not disabled
+            if not is_disabled:
+                non_disabled_count += 1
+            
+            # Include the channel's frequency if we're not skipping disabled channels,
+            # or if the channel is not disabled
+            if not skip_disabled or not is_disabled:
+                freq_match = re.search(r'freq\s*=\s*(.*?);', block)
+                if freq_match:
+                    freq_str = freq_match.group(1).strip()
+                    try:
+                        freq_hz = parse_frequency(freq_str)
+                        frequencies.append(freq_hz)
+                    except ValueError as e:
+                        logging.warning(f"Failed to parse frequency '{freq_str}': {e}")
     
     except FileNotFoundError:
         logging.error(f"Config file not found: {config_path}")

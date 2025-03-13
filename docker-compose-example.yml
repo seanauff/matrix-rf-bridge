@@ -21,5 +21,6 @@ services:
       - BOT_USER=bot_user
       - BOT_PASSWORD=your_bot_password
       - MATRIX_DOMAIN=yourdomain.com
+      - SKIP_DISABLED_CHANNELS=true
     depends_on:
       - synapse
