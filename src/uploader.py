@@ -7,10 +7,10 @@ from watchdog.events import FileSystemEventHandler
 import logging
 
 class UploadHandler(FileSystemEventHandler):
-    def __init__(self, client, room_ids, upload_queue):
+    def __init__(self, client, room_ids, loop):
         self.client = client
         self.room_ids = room_ids
-        self.upload_queue = upload_queue  # Queue to pass tasks to the main thread
+        self.loop = loop
 
     async def upload_file(self, file_path, room_id):
         """
@@ -84,8 +84,7 @@ class UploadHandler(FileSystemEventHandler):
                 frequency = self.extract_frequency(file_path)
                 if frequency and frequency in self.room_ids:
                     room_id = self.room_ids[frequency]
-                    # Add the task to the queue instead of creating it directly
-                    self.upload_queue.put_nowait((file_path, room_id))
+                    asyncio.run_coroutine_threadsafe(self.upload_file(file_path, room_id), self.loop)
                     logging.info(f"Added upload task for {file_path} to queue")
                 else:
                     logging.warning(f"No room found for frequency in mp3 file: {file_path}")
@@ -304,29 +303,24 @@ async def main():
         os.makedirs(recordings_path)
         logging.info(f"Created directory {recordings_path}")
     
-    # Create an asyncio queue for upload tasks
-    upload_queue = asyncio.Queue()
+    # Get the current event loop
+    loop = asyncio.get_running_loop()
 
-    # Initialize the UploadHandler with the queue
-    handler = UploadHandler(client, room_ids, upload_queue)
+    # Initialize handler with the loop instead of a queue
+    handler = UploadHandler(client, room_ids, loop)
 
     # Set up the watchdog observer
     observer = Observer()
     observer.schedule(handler, recordings_path, recursive=False)
     observer.start()
     logging.info(f"Started observer for {recordings_path}")
-    logging.info("Starting main loop to process upload queue")
     
     # Keep the script running
     try:
-        # Main loop to process upload tasks from the queue
         while True:
-            file_path, room_id = await upload_queue.get()  # Wait for a task
-            logging.info(f"Processing upload task for {file_path}")
-            await handler.upload_file(file_path, room_id)  # Run the upload
-            upload_queue.task_done()  # Mark the task as complete
-    except Exception as e:
-        logging.error(f"Error in main loop: {e}")
+            await asyncio.sleep(1)  # Keep the event loop alive
+    except asyncio.CancelledError:  # Handle shutdown gracefully
+        logging.info("Shutting down")
     finally:
         observer.stop()
         observer.join()
