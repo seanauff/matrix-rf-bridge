@@ -12,7 +12,7 @@ class UploadHandler(FileSystemEventHandler):
         self.room_ids = room_ids
         self.upload_queue = upload_queue  # Queue to pass tasks to the main thread
 
-    async def upload_file(self, file_path: str, room_id: str):
+    async def upload_file(self, file_path, room_id):
         """
         Upload an audio file to the Matrix media repository and send it as a message to a room.
 
