@@ -110,6 +110,36 @@ class UploadHandler(FileSystemEventHandler):
         match = re.search(r'_(\d+)\.mp3$', filename)
         return int(match.group(1)) if match else None
 
+def extract_channels_content(content):
+    # Find the start of the channels section
+    channels_start = content.find("channels:")
+    if channels_start == -1:
+        logging.warning("No 'channels:' section found in config.")
+        return None
+    
+    # Find the opening '(' after 'channels:'
+    paren_start = content.find("(", channels_start)
+    if paren_start == -1:
+        logging.warning("No opening '(' found after 'channels:'.")
+        return None
+    
+    # Find the matching ');' considering nested parentheses
+    count = 0
+    for i in range(paren_start, len(content)):
+        if content[i] == '(':
+            count += 1
+        elif content[i] == ')':
+            count -= 1
+            if count == 0:
+                # Found the matching ')', check for ';'
+                if i + 1 < len(content) and content[i + 1] == ';':
+                    return content[paren_start + 1:i].strip()
+                else:
+                    logging.warning("No ';' found after closing ')'.") 
+                    return None
+    logging.warning("No matching ');' found for 'channels: ('.") 
+    return None
+
 def parse_channels(config_path):
     """
     Parse the channels from rtl_airband.conf and return a list of frequencies in Hz.
@@ -125,30 +155,34 @@ def parse_channels(config_path):
     try:
         with open(config_path, 'r') as f:
             content = f.read()
-        
-        # Locate the channels section
-        channels_start = content.find("channels:")
-        if channels_start == -1:
-            logging.warning("No 'channels:' section found in config file.")
+    
+        # Extract the channels content
+        channels_content = extract_channels_content(content)
+        if channels_content is None:
             return []
         
-        paren_start = content.find("(", channels_start)
-        paren_end = content.find(");", paren_start)
-        if paren_start == -1 or paren_end == -1:
-            logging.warning("Invalid channels section format.")
-            return []
+        # Log the extracted content for debugging
+        logging.debug(f"Channels content extracted: {channels_content}")
         
-        channels_content = content[paren_start + 1:paren_end]
+        # Find all channel blocks within '{}'
+        channel_blocks = re.findall(r'\{.*?\}', channels_content, re.DOTALL)
+        logging.info(f"Found {len(channel_blocks)} channel blocks.")
         
-        # Find all frequency lines
-        freq_matches = re.findall(r'[^_]freq\s*=\s*(.*?);', channels_content)
-        
-        for match in freq_matches:
-            try:
-                freq_hz = parse_frequency(match)
-                frequencies.append(freq_hz)
-            except ValueError as e:
-                logging.warning(f"Failed to parse frequency: {match} - {e}")
+        for block in channel_blocks:
+            # Skip disabled channels (optional, remove this check if you want all channels)
+            if 'disable = true;' in block:
+                continue
+            
+            # Extract the frequency
+            freq_match = re.search(r'[^_]freq\s*=\s*(.*?);', block)
+            if freq_match:
+                freq_str = freq_match.group(1).strip()
+                try:
+                    freq_hz = parse_frequency(freq_str)
+                    frequencies.append(freq_hz)
+                    logging.info(f"Parsed frequency: {freq_hz} Hz")
+                except ValueError as e:
+                    logging.warning(f"Failed to parse frequency '{freq_str}': {e}")
     
     except FileNotFoundError:
         logging.error(f"Config file not found: {config_path}")
