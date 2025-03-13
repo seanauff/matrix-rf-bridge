@@ -223,7 +223,7 @@ async def get_or_create_room(client, frequency, domain):
         alias=freq_str,  # Local part of the alias (e.g., "145.500MHz")
         name=f"Recordings for {freq_str}",
         topic=f"Audio recordings for frequency {freq_str}",
-        visibility="public"  # Optional: makes the room joinable without invite
+        visibility=RoomVisibility.public  # Optional: makes the room joinable without invite
     )
     if isinstance(create_response, RoomCreateError):
         raise Exception(f"Failed to create room for {freq_str}: {create_response.message}")
