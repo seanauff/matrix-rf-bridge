@@ -76,16 +76,19 @@ class UploadHandler(FileSystemEventHandler):
             logging.error(f"Error in upload_file: {e}")
 
     # Example of how this might be triggered (for context)
-    def on_created(self, event):
+    def on_moved(self, event):
         """
-        Handle the creation of a new file by scheduling an upload task.
-
+        Handle the creation of a new file by scheduling an upload task, but only for .mp3 files.
+    
         Args:
             event: The filesystem event object.
         """
         if not event.is_directory:
             file_path = event.src_path
-            logging.info(f"New file detected: {file_path}")
+            if not file_path.endswith('.mp3'):
+                logging.info(f"Skipping non-mp3 file: {file_path}")
+                return
+            logging.info(f"New mp3 file detected: {file_path}")
             # Extract frequency from filename (implementation not shown)
             frequency = self.extract_frequency(file_path)
             if frequency and frequency in self.room_ids:
@@ -93,7 +96,7 @@ class UploadHandler(FileSystemEventHandler):
                 # Schedule the upload asynchronously
                 asyncio.create_task(self.upload_file(file_path, room_id))
             else:
-                logging.warning(f"No room found for frequency in file: {file_path}")
+                logging.warning(f"No room found for frequency in mp3 file: {file_path}")
 
     def extract_frequency(self, file_path: str) -> int:
         """
