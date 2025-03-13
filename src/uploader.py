@@ -35,7 +35,7 @@ class UploadHandler(FileSystemEventHandler):
                     encrypt=False,  # Assuming no encryption for simplicity
                     filesize=os.path.getsize(file_path)  # If left as None, some servers might refuse the upload.
                 )
-                logging.info(f"Upload response: {upload_response}")
+                logging.debug(f"Upload response: {upload_response}")
                 # Check if the upload failed
                 if isinstance(upload_response, UploadResponse):
                     logging.info(f"Uploaded successfully: {upload_response.content_uri}")
