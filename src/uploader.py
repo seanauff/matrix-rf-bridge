@@ -6,6 +6,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import logging
 from pydub import AudioSegment
+import numpy as np
 
 class UploadHandler(FileSystemEventHandler):
     def __init__(self, client, room_ids, loop):
@@ -41,6 +42,10 @@ class UploadHandler(FileSystemEventHandler):
                 logging.info(f"Skipping upload of {file_path}: duration {duration}ms is less than minimum {min_duration}ms")
                 return  # Exit early if too short
 
+            # Generate waveform data
+            waveform = generate_waveform(file_path)
+            logging.debug(f"Generated waveform data for {file_path}: {waveform}")
+
             # Open the file in binary read mode
             with open(file_path, "rb") as f:
                 # Upload the file to the Matrix media repository
@@ -72,7 +77,12 @@ class UploadHandler(FileSystemEventHandler):
                     "mimetype": "audio/mpeg",
                     "size": os.path.getsize(file_path),
                     "duration": duration  # Duration in milliseconds
-                }
+                },
+                "org.matrix.msc1767.audio": {
+                    "duration": duration,
+                    "waveform": waveform
+                },
+                "org.matrix.msc3245.voice": {}
             }
 
             # Send the message to the specified room
@@ -147,6 +157,44 @@ def get_mp3_duration(file_path):
     except Exception as e:
         logging.warning(f"Failed to calculate duration for {file_path}: {e}")
         return None
+
+def generate_waveform(file_path, num_points=100):
+    """
+    Generate a waveform representation of the audio file as a list of 100 integers.
+
+    Args:
+        file_path (str): Path to the MP3 file.
+        num_points (int): Number of points in the waveform (default: 100).
+
+    Returns:
+        list: List of 100 integers representing the waveform.
+    """
+    try:
+        # Load the MP3 file
+        audio = AudioSegment.from_mp3(file_path)
+        # Convert to mono for simplicity
+        audio = audio.set_channels(1)
+        # Get raw audio samples as a numpy array
+        samples = np.array(audio.get_array_of_samples())
+        # Divide into 100 segments
+        segment_size = len(samples) // num_points
+        waveform = []
+        for i in range(num_points):
+            start = i * segment_size
+            end = start + segment_size
+            segment = samples[start:end]
+            if len(segment) > 0:
+                # Calculate RMS amplitude for the segment
+                rms = np.sqrt(np.mean(segment**2))
+                # Scale to 0-1000 range (common in Matrix clients)
+                scaled_rms = int(min(rms / 1000, 1) * 1000)
+                waveform.append(scaled_rms)
+            else:
+                waveform.append(0)
+        return waveform
+    except Exception as e:
+        logging.warning(f"Failed to generate waveform for {file_path}: {e}")
+        return [0] * num_points  # Fallback to flat waveform
 
 def extract_channels_content(content):
     # Find the start of the channels section

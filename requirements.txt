@@ -1,3 +1,4 @@
 matrix-nio
 watchdog
 pydub
+numpy
