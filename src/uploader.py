@@ -16,7 +16,7 @@ class UploadHandler(FileSystemEventHandler):
 
     async def upload_file(self, file_path, room_id):
         """
-        Upload an audio file to the Matrix media repository and send it as a message to a room.
+        Upload an audio file to the Matrix media repository and send it as a voice message to a room with waveform data.
 
         Args:
             file_path (str): The path to the audio file to upload.
@@ -44,7 +44,6 @@ class UploadHandler(FileSystemEventHandler):
 
             # Generate waveform data
             waveform = generate_waveform(file_path)
-            logging.debug(f"Generated waveform data for {file_path}: {waveform}")
 
             # Open the file in binary read mode
             with open(file_path, "rb") as f:
@@ -175,22 +174,33 @@ def generate_waveform(file_path, num_points=100):
         # Convert to mono for simplicity
         audio = audio.set_channels(1)
         # Get raw audio samples as a numpy array
-        samples = np.array(audio.get_array_of_samples())
+        samples = np.array(audio.get_array_of_samples(), dtype=np.float64)
+        logging.debug(f"Sample count: {len(samples)}, max: {np.max(samples)}, min: {np.min(samples)}")
+        
+        # Ensure samples are valid
+        if len(samples) == 0:
+            logging.warning(f"No samples found in {file_path}")
+            return [0] * num_points
+        
         # Divide into 100 segments
-        segment_size = len(samples) // num_points
+        segment_size = max(1, len(samples) // num_points)  # Avoid division by zero
         waveform = []
         for i in range(num_points):
             start = i * segment_size
-            end = start + segment_size
+            end = min(start + segment_size, len(samples))  # Don't exceed sample length
             segment = samples[start:end]
             if len(segment) > 0:
                 # Calculate RMS amplitude for the segment
                 rms = np.sqrt(np.mean(segment**2))
-                # Scale to 0-1000 range (common in Matrix clients)
+                if np.isnan(rms):  # Handle NaN case
+                    logging.debug(f"NaN RMS for segment {i} in {file_path}, segment size: {len(segment)}")
+                    rms = 0
+                # Scale to 0-1000 range (Matrix convention)
                 scaled_rms = int(min(rms / 1000, 1) * 1000)
                 waveform.append(scaled_rms)
             else:
                 waveform.append(0)
+        logging.debug(f"Waveform generated for {file_path}: {waveform[:10]}...")  # Log first 10 values
         return waveform
     except Exception as e:
         logging.warning(f"Failed to generate waveform for {file_path}: {e}")
