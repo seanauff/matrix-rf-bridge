@@ -5,7 +5,7 @@ from nio import AsyncClient, UploadResponse, UploadError, RoomSendError, RoomCre
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import logging
-from mutagen.mp3 import MPEGInfo
+from pydub import AudioSegment
 
 class UploadHandler(FileSystemEventHandler):
     def __init__(self, client, room_ids, loop):
@@ -121,7 +121,7 @@ class UploadHandler(FileSystemEventHandler):
 
 def get_mp3_duration(file_path):
     """
-    Calculate the duration of an MP3 file in milliseconds using MPEGInfo with a file object.
+    Calculate the duration of an MP3 file in milliseconds using pydub.
     
     Args:
         file_path (str): Path to the MP3 file.
@@ -130,13 +130,10 @@ def get_mp3_duration(file_path):
         int: Duration in milliseconds, or None if calculation fails.
     """
     try:
-        with open(file_path, "rb") as f:
-            audio = MPEGInfo(f)
-            duration_seconds = audio.length
-            duration_milliseconds = int(duration_seconds * 1000)
-            logging.debug(f"Calculated duration for {file_path}: {duration_milliseconds}ms")
-            logging.debug(f"MP3 info: bitrate={audio.bitrate}, sample_rate={audio.sample_rate}")
-            return duration_milliseconds
+        audio = AudioSegment.from_mp3(file_path)
+        duration_milliseconds = len(audio)  # pydub returns duration in ms
+        logging.debug(f"Calculated duration for {file_path}: {duration_milliseconds}ms")
+        return duration_milliseconds
     except Exception as e:
         logging.warning(f"Failed to calculate duration for {file_path}: {e}")
         return None
