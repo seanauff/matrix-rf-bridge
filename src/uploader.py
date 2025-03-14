@@ -25,13 +25,22 @@ class UploadHandler(FileSystemEventHandler):
         # Add a 1-second delay to ensure the file is fully written
         await asyncio.sleep(1)
 
-        # Calculate duration
-        duration = get_mp3_duration(file_path)
-        if duration is None:
-            duration = 0  # Fallback value; adjust as needed
-            logging.warning(f"Unable to calculate duration for {file_path}, using default duration ({duration}ms)")
-
         try:
+
+            # Get minimum duration from environment variable (in milliseconds), default to 0
+            min_duration = int(os.getenv('MIN_AUDIO_DURATION', '0'))
+
+            # Calculate duration
+            duration = get_mp3_duration(file_path)
+            if duration is None:
+                duration = 0  # Fallback value; adjust as needed
+                logging.warning(f"Unable to calculate duration for {file_path}, using default duration ({duration}ms)")
+
+            # Check if duration meets the minimum threshold
+            if duration < min_duration:
+                logging.info(f"Skipping upload of {file_path}: duration {duration}ms is less than minimum {min_duration}ms")
+                return  # Exit early if too short
+
             # Open the file in binary read mode
             with open(file_path, "rb") as f:
                 # Upload the file to the Matrix media repository

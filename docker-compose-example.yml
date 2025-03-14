@@ -22,5 +22,6 @@ services:
       - BOT_PASSWORD=your_bot_password
       - MATRIX_DOMAIN=yourdomain.com
       - SKIP_DISABLED_CHANNELS=true
+      - MIN_AUDIO_DURATION=500  # Example: 0.5 seconds (500ms)
     depends_on:
       - synapse
