@@ -5,7 +5,7 @@ from nio import AsyncClient, UploadResponse, UploadError, RoomSendError, RoomCre
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import logging
-from mutagen.mp3 import MP3
+from mutagen.mp3 import MPEGInfo
 
 class UploadHandler(FileSystemEventHandler):
     def __init__(self, client, room_ids, loop):
@@ -130,9 +130,10 @@ def get_mp3_duration(file_path):
         int: Duration in milliseconds, or None if calculation fails.
     """
     try:
-        audio = MP3(file_path)
-        duration_seconds = audio.info.length
+        audio = MPEGInfo(file_path)
+        duration_seconds = audio.length
         duration_milliseconds = int(duration_seconds * 1000)
+        logging.debug(f"Calculated duration for {file_path}: {duration_milliseconds}ms")
         return duration_milliseconds
     except Exception as e:
         logging.warning(f"Failed to calculate duration for {file_path}: {e}")
