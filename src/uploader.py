@@ -20,7 +20,7 @@ class UploadHandler(FileSystemEventHandler):
             file_path (str): The path to the audio file to upload.
             room_id (str): The ID of the Matrix room to send the file to.
         """
-        logging.info(f"Uploading {file_path} to room {room_id}")
+        logging.debug(f"Uploading {file_path} to room {room_id}")
         # Add a 1-second delay to ensure the file is fully written
         await asyncio.sleep(1)
 
@@ -38,7 +38,7 @@ class UploadHandler(FileSystemEventHandler):
                 logging.debug(f"Upload response: {upload_response}")
                 # Check if the upload failed
                 if isinstance(upload_response, UploadResponse):
-                    logging.info(f"Uploaded successfully: {upload_response.content_uri}")
+                    logging.debug(f"Uploaded successfully: {upload_response.content_uri}")
                 elif isinstance(upload_response, UploadError):
                     logging.error(f"Upload failed: {upload_response.message}")
                     return None
@@ -64,7 +64,7 @@ class UploadHandler(FileSystemEventHandler):
                 if isinstance(send_response, RoomSendError):
                     logging.error(f"Failed to send message: {send_response.message}")
                 else:
-                    logging.info(f"Successfully sent message for file: {file_path}")
+                    logging.info(f"Successfully sent message for file: {file_path} to room {room_id}")
 
         except FileNotFoundError:
             logging.error(f"File not found: {file_path}")
@@ -87,7 +87,7 @@ class UploadHandler(FileSystemEventHandler):
                 if frequency and frequency in self.room_ids:
                     room_id = self.room_ids[frequency]
                     asyncio.run_coroutine_threadsafe(self.upload_file(file_path, room_id), self.loop)
-                    logging.info(f"Added upload task for {file_path} to queue")
+                    logging.debug(f"Added upload task for {file_path} to queue")
                 else:
                     logging.warning(f"No room found for frequency in mp3 file: {file_path}")
 
