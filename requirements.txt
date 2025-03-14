@@ -1,0 +1,4 @@
+matrix-nio
+watchdog
+mutagen
+pydub
