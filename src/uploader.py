@@ -135,6 +135,7 @@ def get_mp3_duration(file_path):
             duration_seconds = audio.length
             duration_milliseconds = int(duration_seconds * 1000)
             logging.debug(f"Calculated duration for {file_path}: {duration_milliseconds}ms")
+            logging.debug(f"MP3 info: bitrate={audio.info.bitrate}, sample_rate={audio.info.sample_rate}")
             return duration_milliseconds
     except Exception as e:
         logging.warning(f"Failed to calculate duration for {file_path}: {e}")
@@ -307,7 +308,7 @@ async def get_or_create_room(client, frequency, domain):
 
 async def main():
     """Main function to set up and run the uploader."""
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     
     # Initialize Matrix client
     client = AsyncClient(
