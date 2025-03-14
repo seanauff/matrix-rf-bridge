@@ -42,42 +42,42 @@ class UploadHandler(FileSystemEventHandler):
                     encrypt=False,  # Assuming no encryption for simplicity
                     filesize=os.path.getsize(file_path)  # If left as None, some servers might refuse the upload.
                 )
-                logging.debug(f"Upload response: {upload_response}")
+            logging.debug(f"Upload response: {upload_response}")
 
-                # Check if the upload failed
-                if isinstance(upload_response, UploadResponse):
-                    logging.debug(f"Uploaded successfully: {upload_response.content_uri}")
-                elif isinstance(upload_response, UploadError):
-                    logging.error(f"Upload failed: {upload_response.message}")
-                    return None
-                else:
-                    logging.error(f"Unexpected response: {upload_response}")
-                    return None
+            # Check if the upload failed
+            if isinstance(upload_response, UploadResponse):
+                logging.debug(f"Uploaded successfully: {upload_response.content_uri}")
+            elif isinstance(upload_response, UploadError):
+                logging.error(f"Upload failed: {upload_response.message}")
+                return None
+            else:
+                logging.error(f"Unexpected response: {upload_response}")
+                return None
 
-                # Prepare the content for the audio message
-                content = {
-                    "msgtype": "m.audio",  # Message type for audio files
-                    "body": os.path.basename(file_path),  # File name as the message body
-                    "url": upload_response.content_uri,  # URL of the uploaded file
-                    "info": {
-                        "mimetype": "audio/mpeg",
-                        "size": os.path.getsize(file_path),
-                        "duration": duration  # Duration in milliseconds
-                    }
+            # Prepare the content for the audio message
+            content = {
+                "msgtype": "m.audio",  # Message type for audio files
+                "body": os.path.basename(file_path),  # File name as the message body
+                "url": upload_response.content_uri,  # URL of the uploaded file
+                "info": {
+                    "mimetype": "audio/mpeg",
+                    "size": os.path.getsize(file_path),
+                    "duration": duration  # Duration in milliseconds
                 }
+            }
 
-                # Send the message to the specified room
-                send_response = await self.client.room_send(
-                    room_id=room_id,
-                    message_type="m.room.message",  # Standard message event type
-                    content=content
-                )
+            # Send the message to the specified room
+            send_response = await self.client.room_send(
+                room_id=room_id,
+                message_type="m.room.message",  # Standard message event type
+                content=content
+            )
 
-                # Check if sending the message failed
-                if isinstance(send_response, RoomSendError):
-                    logging.error(f"Failed to send message: {send_response.message}")
-                else:
-                    logging.info(f"Successfully sent message for file: {file_path} to room {room_id}")
+            # Check if sending the message failed
+            if isinstance(send_response, RoomSendError):
+                logging.error(f"Failed to send message: {send_response.message}")
+            else:
+                logging.info(f"Successfully sent message for file: {file_path} to room {room_id}")
 
         except FileNotFoundError:
             logging.error(f"File not found: {file_path}")
