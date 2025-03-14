@@ -104,8 +104,9 @@ class UploadHandler(FileSystemEventHandler):
         if not event.is_directory:
             file_path = event.dest_path
             if file_path.endswith('.mp3'):
-                logging.info(f"New mp3 file: {file_path}")
                 frequency = self.extract_frequency(file_path)
+                freq_str = f"{frequency / 1000000:.3f}MHz"
+                logging.info(f"New recording found for {freq_str}: {file_path}")
                 if frequency and frequency in self.room_ids:
                     room_id = self.room_ids[frequency]
                     asyncio.run_coroutine_threadsafe(self.upload_file(file_path, room_id), self.loop)
