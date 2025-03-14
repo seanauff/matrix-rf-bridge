@@ -5,6 +5,7 @@ from nio import AsyncClient, UploadResponse, UploadError, RoomSendError, RoomCre
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import logging
+from mutagen.mp3 import MP3
 
 class UploadHandler(FileSystemEventHandler):
     def __init__(self, client, room_ids, loop):
@@ -24,6 +25,12 @@ class UploadHandler(FileSystemEventHandler):
         # Add a 1-second delay to ensure the file is fully written
         await asyncio.sleep(1)
 
+        # Calculate duration
+        duration = get_mp3_duration(file_path)
+        if duration is None:
+            duration = 0  # Fallback value; adjust as needed
+            logging.warning(f"Unable to calculate duration for {file_path}, using default duration ({duration}ms)")
+
         try:
             # Open the file in binary read mode
             with open(file_path, "rb") as f:
@@ -36,6 +43,7 @@ class UploadHandler(FileSystemEventHandler):
                     filesize=os.path.getsize(file_path)  # If left as None, some servers might refuse the upload.
                 )
                 logging.debug(f"Upload response: {upload_response}")
+
                 # Check if the upload failed
                 if isinstance(upload_response, UploadResponse):
                     logging.debug(f"Uploaded successfully: {upload_response.content_uri}")
@@ -50,7 +58,12 @@ class UploadHandler(FileSystemEventHandler):
                 content = {
                     "msgtype": "m.audio",  # Message type for audio files
                     "body": os.path.basename(file_path),  # File name as the message body
-                    "url": upload_response.content_uri  # URL of the uploaded file
+                    "url": upload_response.content_uri,  # URL of the uploaded file
+                    "info": {
+                        "mimetype": "audio/mpeg",
+                        "size": os.path.getsize(file_path),
+                        "duration": duration  # Duration in milliseconds
+                    }
                 }
 
                 # Send the message to the specified room
@@ -105,6 +118,25 @@ class UploadHandler(FileSystemEventHandler):
         filename = os.path.basename(file_path)
         match = re.search(r'_(\d+)\.mp3$', filename)
         return int(match.group(1)) if match else None
+
+def get_mp3_duration(file_path):
+    """
+    Calculate the duration of an MP3 file in milliseconds.
+    
+    Args:
+        file_path (str): Path to the MP3 file.
+    
+    Returns:
+        int: Duration in milliseconds, or None if calculation fails.
+    """
+    try:
+        audio = MP3(file_path)
+        duration_seconds = audio.info.length
+        duration_milliseconds = int(duration_seconds * 1000)
+        return duration_milliseconds
+    except Exception as e:
+        logging.warning(f"Failed to calculate duration for {file_path}: {e}")
+        return None
 
 def extract_channels_content(content):
     # Find the start of the channels section
