@@ -305,7 +305,7 @@ async def get_or_create_room(client, frequency, domain):
 
 async def main():
     """Main function to set up and run the uploader."""
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     
     # Initialize Matrix client
     client = AsyncClient(
