@@ -121,7 +121,7 @@ class UploadHandler(FileSystemEventHandler):
 
 def get_mp3_duration(file_path):
     """
-    Calculate the duration of an MP3 file in milliseconds.
+    Calculate the duration of an MP3 file in milliseconds using MPEGInfo with a file object.
     
     Args:
         file_path (str): Path to the MP3 file.
@@ -130,11 +130,12 @@ def get_mp3_duration(file_path):
         int: Duration in milliseconds, or None if calculation fails.
     """
     try:
-        audio = MPEGInfo(file_path)
-        duration_seconds = audio.length
-        duration_milliseconds = int(duration_seconds * 1000)
-        logging.debug(f"Calculated duration for {file_path}: {duration_milliseconds}ms")
-        return duration_milliseconds
+        with open(file_path, "rb") as f:
+            audio = MPEGInfo(f)
+            duration_seconds = audio.length
+            duration_milliseconds = int(duration_seconds * 1000)
+            logging.debug(f"Calculated duration for {file_path}: {duration_milliseconds}ms")
+            return duration_milliseconds
     except Exception as e:
         logging.warning(f"Failed to calculate duration for {file_path}: {e}")
         return None
