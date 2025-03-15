@@ -166,7 +166,7 @@ def generate_waveform(file_path, num_points=100):
         num_points (int): Number of points in the waveform (default: 100).
 
     Returns:
-        list: List of 100 integers representing the waveform.
+        list: List of 100 integers representing the waveform, scaled to 0-1000.
     """
     try:
         # Load the MP3 file
@@ -182,25 +182,23 @@ def generate_waveform(file_path, num_points=100):
             logging.warning(f"No samples found in {file_path}")
             return [0] * num_points
         
-        # Divide into 100 segments
-        segment_size = max(1, len(samples) // num_points)  # Avoid division by zero
-        waveform = []
+        # Divide into 100 segments and calculate RMS for each
+        segment_size = max(1, len(samples) // num_points)
+        rms_values = []
         for i in range(num_points):
             start = i * segment_size
-            end = min(start + segment_size, len(samples))  # Don't exceed sample length
+            end = min(start + segment_size, len(samples))
             segment = samples[start:end]
             if len(segment) > 0:
-                # Calculate RMS amplitude for the segment
                 rms = np.sqrt(np.mean(segment**2))
-                if np.isnan(rms):  # Handle NaN case
-                    logging.debug(f"NaN RMS for segment {i} in {file_path}, segment size: {len(segment)}")
-                    rms = 0
-                # Scale to 0-1000 range (Matrix convention)
-                scaled_rms = int(min(rms / 1000, 1) * 1000)
-                waveform.append(scaled_rms)
+                rms_values.append(0 if np.isnan(rms) else rms)
             else:
-                waveform.append(0)
-        logging.debug(f"Waveform generated for {file_path}: {waveform[:10]}...")  # Log first 10 values
+                rms_values.append(0)
+
+        # Scale waveform to 0-1000 based on maximum RMS
+        max_rms = max(rms_values) if rms_values else 1  # Avoid division by zero
+        waveform = [int((rms / max_rms) * 1000) if max_rms > 0 else 0 for rms in rms_values]
+        logging.debug(f"Waveform for {file_path}: max RMS={max_rms}, values={waveform[:10]}...")
         return waveform
     except Exception as e:
         logging.warning(f"Failed to generate waveform for {file_path}: {e}")
