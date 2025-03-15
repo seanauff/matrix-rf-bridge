@@ -208,13 +208,13 @@ def extract_channels_content(content):
     # Find the start of the channels section
     channels_start = content.find("channels:")
     if channels_start == -1:
-        logging.warning("No 'channels:' section found in config.")
+        logging.error("No 'channels:' section found in config.")
         return None
     
     # Find the opening '(' after 'channels:'
     paren_start = content.find("(", channels_start)
     if paren_start == -1:
-        logging.warning("No opening '(' found after 'channels:'.")
+        logging.error("No opening '(' found after 'channels:'.")
         return None
     
     # Find the matching ');' considering nested parentheses
@@ -229,9 +229,9 @@ def extract_channels_content(content):
                 if i + 1 < len(content) and content[i + 1] == ';':
                     return content[paren_start + 1:i].strip()
                 else:
-                    logging.warning("No ';' found after closing ')'.") 
+                    logging.error("No ';' found after closing ')'.") 
                     return None
-    logging.warning("No matching ');' found for 'channels: ('.") 
+    logging.error("No matching ');' found for 'channels: ('.") 
     return None
 
 def parse_channels(config_path):
