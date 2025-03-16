@@ -424,6 +424,7 @@ async def main():
     finally:
         observer.stop()
         observer.join()
+        await client.logout()
         await client.close()  # Clean up your client
 
 if __name__ == "__main__":
