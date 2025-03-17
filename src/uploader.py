@@ -361,8 +361,8 @@ async def get_or_create_room(client, frequency, domain):
     # Room doesn’t exist, create it
     create_response = await client.room_create(
         alias=freq_str,  # Local part of the alias (e.g., "145.500MHz")
-        name=f"Recordings for {freq_str}",
-        topic=f"Audio recordings for frequency {freq_str}",
+        name=f"{freq_str}",
+        topic=f"Audio recordings for {freq_str}",
         visibility=RoomVisibility.public  # Optional: makes the room joinable without invite
     )
     if isinstance(create_response, RoomCreateError):
