@@ -11,8 +11,8 @@ services:
       # Other Synapse configurations as needed
 
   rtl-airband-matrix:
-    build: ./rtl-airband-matrix  # Assumes a Dockerfile in ./rtl-airband-matrix directory
-    container_name: rtl-airband-matrix
+    image: seanauff/matrix-rf-bridge
+    container_name: matrix-rf-bridge
     volumes:
       - ./recordings:/recordings  # Directory where recordings are saved
       - ./rtl_airband/rtl_airband.conf:/etc/rtl_airband.conf:ro  # Mount the config file
