@@ -95,7 +95,12 @@ class UploadHandler(FileSystemEventHandler):
             if isinstance(send_response, RoomSendError):
                 logging.error(f"Failed to send message: {send_response.message}")
             else:
-                logging.info(f"Successfully sent message for file: {file_path} to room {room_id}")
+                logging.info(f"Successfully sent message for file: {file_path} with duration {duration} ms to room {room_id}")
+                if os.getenv('DELETE_AFTER_UPLOAD', 'true').lower() == 'true':
+                    os.remove(file_path)
+                    logging.debug(f"Deleted source file: {file_path}")
+                else:
+                    logging.debug(f"Retained source file: {file_path}")
 
         except FileNotFoundError:
             logging.error(f"File not found: {file_path}")

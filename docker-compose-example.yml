@@ -23,5 +23,6 @@ services:
       - MATRIX_DOMAIN=yourdomain.com
       - SKIP_DISABLED_CHANNELS=true
       - MIN_AUDIO_DURATION=500  # Example: 0.5 seconds (500ms)
+      - DELETE_AFTER_UPLOAD=true # default true
     depends_on:
       - synapse
