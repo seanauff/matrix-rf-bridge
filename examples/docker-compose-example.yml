@@ -25,7 +25,7 @@ services:
       - /path/to/rtl-airband/recordings/:/recordings/ # optional path to metrics
 
   matrix-rf-bridge:
-    image: seanauff/matrix-rf-bridge
+    image: ghcr.io/seanauff/matrix-rf-bridge:latest
     container_name: matrix-rf-bridge
     volumes:
       - /path/to/rtlsdr-airband/recordings:/recordings  # Directory where recordings are saved
