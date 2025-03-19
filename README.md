@@ -114,3 +114,5 @@ MIT License. See [LICENSE](LICENSE) for details.
 ## Acknowledgments
 
 Tools: `rtl_airband`, `matrix-nio`, `pydub`, `numpy`.
+
+[Grok](https://grok.com/share/bGVnYWN5_dc34ee7a-6ab6-4fab-a7c0-ceb1468cd419) helped get this up and running quickly and is continuing to help with new features and improvements!
