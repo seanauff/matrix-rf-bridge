@@ -1,0 +1,40 @@
+services:
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: synapse
+    restart: unless-stopped
+    ports:
+      - "8008:8008"
+    volumes:
+      - /path/to/synapse/data:/data
+      - /path/to/synapse/media_store:/media_store
+    environment:
+      - SYNAPSE_CONFIG_PATH=/data/homeserver.yaml
+      - SYNAPSE_SERVER_NAME=yourdomain.com
+      # Other Synapse configurations as needed, including potgres db
+
+  rtlsdr-airband:
+    image: rtl-airband/rtlsdr-airband
+    container_name: rtlsdr-airband
+    restart: unless-stopped
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    volumes:
+      - /path/to/rtl-airband/rtl_airband.conf:/app/rtl_airband.conf
+      - /path/to/rtl-airband/rtl_airband_stats.txt:/app/rtl_airband_stats.txt
+      - /path/to/rtl-airband/recordings/:/recordings/ # optional path to metrics
+
+  matrix-rf-bridge:
+    image: seanauff/matrix-rf-bridge
+    container_name: matrix-rf-bridge
+    volumes:
+      - /path/to/rtlsdr-airband/recordings:/recordings  # Directory where recordings are saved
+      - ./rtl_airband/rtl_airband.conf:/etc/rtl_airband.conf:ro  # Mount the config file
+    environment:
+      - SYNAPSE_URL=http://synapse:8008 # or https://matrix.yourdomain.com
+      - BOT_USER=radio_bot
+      - BOT_PASSWORD=<your_bot_password>
+      - MATRIX_DOMAIN=yourdomain.com
+      - SKIP_DISABLED_CHANNELS=true
+      - MIN_AUDIO_DURATION=500  # Example: 0.5 seconds (500ms)
+      - DELETE_AFTER_UPLOAD=true # default true
