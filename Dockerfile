@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.12
 LABEL org.opencontainers.image.source=https://github.com/seanauff/matrix-rf-bridge
 LABEL org.opencontainers.image.description="The Matrix RF Bridge is a Python-based tool that uploads recordings from an RTLSDR-Airband instance (running in multichannel mode) to a Matrix server (e.g., Synapse)."
 LABEL org.opencontainers.image.licenses=MIT
