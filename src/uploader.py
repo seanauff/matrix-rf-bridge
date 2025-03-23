@@ -171,7 +171,7 @@ def generate_waveform(file_path, num_points=100):
         num_points (int): Number of points in the waveform (default: 100).
 
     Returns:
-        list: List of 100 integers representing the waveform, scaled to 0-1000.
+        list: List of 100 integers representing the waveform, scaled to 0-1000 based on 95th percentile RMS.
     """
     try:
         # Load the MP3 file
@@ -200,10 +200,12 @@ def generate_waveform(file_path, num_points=100):
             else:
                 rms_values.append(0)
 
-        # Scale waveform to 0-1000 based on maximum RMS
-        max_rms = max(rms_values) if rms_values else 1  # Avoid division by zero
-        waveform = [int((rms / max_rms) * 1000) if max_rms > 0 else 0 for rms in rms_values]
-        logging.debug(f"Waveform for {file_path}: max RMS={max_rms}, values={waveform[:10]}...")
+        # Scale waveform to 0-1000 based on 95th percentile RMS
+        percentile_95_rms = np.percentile(rms_values, 95) if rms_values else 1  # Avoid division by zero
+        waveform = [int((rms / percentile_95_rms) * 1000) if percentile_95_rms > 0 else 0 for rms in rms_values]
+        # Cap values at 1000 to avoid exceeding the range due to outliers
+        waveform = [min(value, 1000) for value in waveform]
+        logging.debug(f"Waveform for {file_path}: 95th percentile RMS={percentile_95_rms}, values={waveform[:10]}...")
         return waveform
     except Exception as e:
         logging.warning(f"Failed to generate waveform for {file_path}: {e}")

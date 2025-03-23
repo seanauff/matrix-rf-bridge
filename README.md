@@ -116,7 +116,7 @@ Submit issues or pull requests for enhancements.
 - **Data mode decoding**: Decode non-voice transmissions (e.g. APRS/AX.25, CW, etc.) and send data as message. Direwolf? multimon-ng? Another?
 - **Transmit**: Voice (or data) messages sent to the rooms could be broadcast over RF with suitable equipment.
 - **Frequency Grouping**: Organize recordings into Matrix spaces (e.g., one space per band like VHF/UHF) instead of just individual rooms per frequency.
-- **Waveform Scaling improvements**: Current the waveform is scaled such that the max is based on the largest rms value. using percentile would give better dynamic range.
+- ~~**DONE Waveform Scaling improvements**: Current the waveform is scaled such that the max is based on the largest rms value. using percentile would give better dynamic range.~~
 - **Upload Retry Mechanism**: Retry failed uploads (e.g., due to network issues) with exponential backoff. Wrap the client.upload and room_send calls in a retry loop using asyncio. Periodically scan recordings directory for files missed if the uploader was not running while rtlsdr-airband was.
 - **Configuration file specific to the project**: Currently uses the `rtl_airband.conf` file to generate rooms, could do the otherway around, maybe with simple csv files for the channels.
 - **Parallel Uploads**: Process and upload multiple recordings concurrently to handle high recording rates. Use asyncio.gather to run multiple upload_file tasks.
