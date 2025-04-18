@@ -57,22 +57,15 @@ This could be used to monitor ATC audio or amateur radio transmissions (the repe
    - Follow the [Synapse installation guide](https://matrix-org.github.io/synapse/latest/setup/installation.html).
    - Register a bot user: `register_new_matrix_user -u radio_bot -p <password> -a -c /path/to/homeserver.yaml`.
 
-### Clone the Repository
-
-```bash
-git clone https://github.com/seanauff/matrix-rf-bridge.git
-cd matrix-rf-bridge
-```
-
-## Build Instructions
-
-1. **Prepare Configuration**:
+3. **Prepare Configuration**:
    - See [example](examples/rtl_airband_example.conf) and edit/add SDR parameters and frequencies for your needs. Keep the file output options as shown in the example.
-2. **Create Docker Compose File**:
+
+4. **Create Docker Compose File**:
    - See [example](examples/docker-compose-example.yml) and edit for your needs (file paths, etc.).
-3. **Build and Run**:
+
+5. **Run**:
 ```bash
-docker-compose up --build
+docker-compose up
 ```
 
 ## Usage
