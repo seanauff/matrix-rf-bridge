@@ -79,7 +79,7 @@ docker-compose up --build
 
 `rtlsdr-airband` connects to the specified SDR and saves recordings to /recordings, according to the frequencies specified in `rtl_airband.conf`.
 
-The uploader first reads the `rtl_airband.conf` file, creates rooms for each channel, skipping disabled channels. On first start, this may take some time if rate limiting is in effect on the amtrix server. It then watches the `/recordings` directory, processes the .mp3 files, generates waveforms, and sends them as voice messages to frequency-specific rooms (e.g., #147.285MHz:yourdomain.com). Files are deleted after successful upload.
+The uploader first reads the `rtl_airband.conf` file, creates rooms for each channel, skipping disabled channels. On first start, this may take some time if rate limiting is in effect on the matrix server. It then watches the `/recordings` directory, processes the .mp3 files, generates waveforms, and sends them as voice messages to frequency-specific rooms (e.g., #147.285MHz:yourdomain.com). Files are deleted after successful upload.
 
 Use a client like Element access the Matrix server, join rooms, see waveforms, and listen to recordings. Change the room names as desired, the names will not be overridden.
 
