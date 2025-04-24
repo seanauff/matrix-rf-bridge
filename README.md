@@ -87,7 +87,7 @@ The uploader relies on the `rtl_airband.conf` having specific parameters set. Ke
 - `BOT_PASSWORD`: Bot password.
 - `MATRIX_DOMAIN`: Your Matrix domain (e.g., yourdomain.com).
 - `MIN_AUDIO_DURATION`: Minimum duration in milliseconds for uploads (e.g., 2000 for 2 seconds; default: 0, no filtering).
-- `SKIP_DISABLED_CHANNELS`: Don't create/monitor rooms for channels that are disbaled in `rtl_airband.conf` (default: true).
+- `SKIP_DISABLED_CHANNELS`: Don't create/monitor rooms for channels that are disabled in `rtl_airband.conf` (default: true).
 - `DELETE_AFTER_UPLOAD`: Delete source mp3 files from recordings directory after successful upload (default: true).
 
 ## Notes
@@ -101,20 +101,20 @@ The uploader relies on the `rtl_airband.conf` having specific parameters set. Ke
 
 Submit issues or pull requests for enhancements.
 
-## Enchancement ideas
+## Enhancement ideas
 
 - **Real-Time Audio Streaming**: Use a streaming output of rtlsdr-airband and route to the VOIP feature of matrix.
 - **Metadata**: Add metadata to voice messages, like signal strength, etc.
-- **Voice transciption**: Transcribe audio and include the text with messages.
+- **Voice transcription**: Transcribe audio and include the text with messages.
 - **Data mode decoding**: Decode non-voice transmissions (e.g. APRS/AX.25, CW, etc.) and send data as message. Direwolf? multimon-ng? Another?
 - **Transmit**: Voice (or data) messages sent to the rooms could be broadcast over RF with suitable equipment.
 - **Frequency Grouping**: Organize recordings into Matrix spaces (e.g., one space per band like VHF/UHF) instead of just individual rooms per frequency.
 - **DONE Waveform Scaling improvements**: ~~Current the waveform is scaled such that the max is based on the largest rms value. using percentile would give better dynamic range.~~
 - **Upload Retry Mechanism**: Retry failed uploads (e.g., due to network issues) with exponential backoff. Wrap the client.upload and room_send calls in a retry loop using asyncio. Periodically scan recordings directory for files missed if the uploader was not running while rtlsdr-airband was.
-- **Configuration file specific to the project**: Currently uses the `rtl_airband.conf` file to generate rooms, could do the otherway around, maybe with simple csv files for the channels.
+- **Configuration file specific to the project**: Currently uses the `rtl_airband.conf` file to generate rooms, could do the other way around, maybe with simple csv files for the channels.
 - **Parallel Uploads**: Process and upload multiple recordings concurrently to handle high recording rates. Use asyncio.gather to run multiple upload_file tasks.
 - **Metrics**: Process for showing per channels statistics (e.g. transmissions per hour, airtime utilization, signal strength, etc.)
-- **Channel Avatars**: Automatically create and set iamges for each created channel.
+- **Channel Avatars**: Automatically create and set images for each created channel.
 - **Quick start guide**: Lowers the entry barrier for new users.
 - **Continuous Integration**: Add tests to the GitHub Actions workflow to verify the uploader works across architectures.
 - **Refactor/code organization**: Break code into logical modules under a package structure, making it easier to manage.
