@@ -105,7 +105,7 @@ Submit issues or pull requests for enhancements.
 
 - **Real-Time Audio Streaming**: Use a streaming output of rtlsdr-airband and route to the VOIP feature of matrix.
 - **Metadata**: Add metadata to voice messages, like signal strength, etc.
-- **Voice transcription**: Transcribe audio and include the text with messages.
+- **Voice transcription**: Transcribe audio and include the text with messages. Maybe use [faster-whisper](https://github.com/SYSTRAN/faster-whisper)?
 - **Data mode decoding**: Decode non-voice transmissions (e.g. APRS/AX.25, CW, etc.) and send data as message. Direwolf? multimon-ng? Another?
 - **Transmit**: Voice (or data) messages sent to the rooms could be broadcast over RF with suitable equipment.
 - **Frequency Grouping**: Organize recordings into Matrix spaces (e.g., one space per band like VHF/UHF) instead of just individual rooms per frequency.
