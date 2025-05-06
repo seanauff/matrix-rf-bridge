@@ -103,6 +103,7 @@ Submit issues or pull requests for enhancements.
 
 ## Enhancement ideas
 
+- **Retention Policy**: Add ability to define a retention policy and apply that to created rooms. See [here](https://element-hq.github.io/synapse/latest/message_retention_policies.html).
 - **Real-Time Audio Streaming**: Use a streaming output of rtlsdr-airband and route to the VOIP feature of matrix.
 - **Metadata**: Add metadata to voice messages, like signal strength, etc.
 - **Voice transcription**: Transcribe audio and include the text with messages. Maybe use [faster-whisper](https://github.com/SYSTRAN/faster-whisper)?
