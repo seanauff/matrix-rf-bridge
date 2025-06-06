@@ -1,17 +1,4 @@
 services:
-  synapse:
-    image: matrixdotorg/synapse:latest
-    container_name: synapse
-    restart: unless-stopped
-    ports:
-      - "8008:8008"
-    volumes:
-      - /path/to/synapse/data:/data
-      - /path/to/synapse/media_store:/media_store
-    environment:
-      - SYNAPSE_CONFIG_PATH=/data/homeserver.yaml
-      - SYNAPSE_SERVER_NAME=yourdomain.com
-      # Other Synapse configurations as needed, including potgres db
 
   rtlsdr-airband:
     image: ghcr.io/rtl-airband/rtlsdr-airband
