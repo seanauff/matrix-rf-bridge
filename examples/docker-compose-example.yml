@@ -14,7 +14,7 @@ services:
       # Other Synapse configurations as needed, including potgres db
 
   rtlsdr-airband:
-    image: rtl-airband/rtlsdr-airband
+    image: ghcr.io/rtl-airband/rtlsdr-airband
     container_name: rtlsdr-airband
     restart: unless-stopped
     devices:
